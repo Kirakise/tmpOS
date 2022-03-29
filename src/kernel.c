@@ -1,9 +1,11 @@
 #include "kernel.h"
+#include "disk/streamer.h"
 #include "disk/disk.h"
 #include "utils.h"
 #include "idt/idt.h"
 #include "memory/kheap.h"
 #include "memory/paging.h"
+#include "fs/parser.h"
 
 uint16_t *video_mem = (uint16_t *)(0xB8000);
 uint8_t term_col;
@@ -54,5 +56,10 @@ void kernel_start()
         //literally
         enable_interrupts();
 
+        struct disk_stream *stream = disk_streamer_new(0);
+        disk_stream_seek(stream, 0x4E3);
+        uint8_t c = 0;
+        disk_stream_read(stream, &c, 1);
+        (void)c;
         print("Everything is OK");
 }

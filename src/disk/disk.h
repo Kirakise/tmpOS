@@ -3,6 +3,7 @@
 
 #define DISK_TYPE_REAL 0
 #define DISK_TYPE_VIRTUAL 1
+#define SECTOR_SIZE 512
 
 struct disk{
         uint32_t type;

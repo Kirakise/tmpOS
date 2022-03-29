@@ -3,13 +3,7 @@
 #include "status.h"
 #include "../utils.h"
 
-static void *kzalloc(uint32_t size){
-        char *tmp = kmalloc(size);
-        if (!tmp)
-                return 0;
-        memset(tmp, 0x0, size);
-        return tmp;
-}
+
 
 uint32_t *current_dir = 0;
 

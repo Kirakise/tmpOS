@@ -1,11 +1,12 @@
 #include "utils.h"
 #include "kernel.h"
 #include <stddef.h>
+#include <stdbool.h>
 
 size_t strlen(const char *str){
         size_t count = 0;
 
-        while (*str != 0)
+        while (*str++ != 0)
                 count++;
         return count;
 }
@@ -53,4 +54,25 @@ void *memset(void *ptr, char c, int size){
         for (int i = 0; i < size; i++)
                 c_ptr[i] = c;
         return ptr;
+}
+
+
+bool isdigit(char c){
+        return c >= 48 && c <= 57;
+}
+
+
+int strnlen(const char *str, uint32_t max){
+        size_t count = 0;
+
+        while (*str++ != 0 || count > max)
+                count++;
+        return count > max ? -1 : count;
+}
+
+int memcmp(const void *ptr1, const void *ptr2, uint32_t n){
+        for (int i = 0; i < n; i++)
+                if (((char *)ptr1)[i] != ((char *)ptr2)[i])
+                        return  ((char *)ptr1)[i] - ((char *)ptr2)[i];
+        return  ((char *)ptr1)[n] - ((char *)ptr2)[n];
 }

@@ -16,6 +16,13 @@ void kheap_init(){
                 print("Error creating kernel heap\n");
 }
 
+void *kzalloc(uint32_t size){
+        char *tmp = kmalloc(size);
+        if (!tmp)
+                return 0;
+        memset(tmp, 0x0, size);
+        return tmp;
+}
 
 void *kmalloc(uint32_t size){
         return heap_malloc(size, &kernel_heap);

@@ -13,4 +13,4 @@ extern struct heap_table kernel_heap_table;
 void *kmalloc(uint32_t size);
 void kheap_init();
 void kfree(void *ptr);
-
+void *kzalloc(uint32_t size);
