@@ -3,6 +3,8 @@ section .asm
 global idt_load
 global int21h
 global no_interrupt
+global disable_interrupts
+global enable_interrupts
 extern int21h_handler
 extern no_interrupt_handler
 
@@ -32,3 +34,10 @@ no_interrupt:
         sti
         iret
         
+enable_interrupts:
+        sti
+        ret
+
+disable_interrupts:
+        cli
+        ret

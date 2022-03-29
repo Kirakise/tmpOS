@@ -1,11 +1,14 @@
 #include "kernel.h"
+#include "disk/disk.h"
 #include "utils.h"
 #include "idt/idt.h"
 #include "memory/kheap.h"
+#include "memory/paging.h"
 
 uint16_t *video_mem = (uint16_t *)(0xB8000);
 uint8_t term_col;
 uint8_t term_row;
+struct paging_4gb_chunk *kernel_chunk;
 extern void _problem();
 
 
@@ -35,15 +38,21 @@ uint16_t get_char(uint8_t ch, uint8_t fore_color, uint8_t back_color)
 
 void kernel_start()
 {
+        disk_search_and_init();
+        //Set interrupt table
         idt_init();
+        //Clear termianl window
         clear_term();
-        kheap_init(); //init kernel heap
-        void *ptr = kmalloc(50);
-        void *ptr2 = kmalloc(5000);
-        kfree(ptr);
-        kfree(ptr2);
-        ptr = kmalloc(50);
-        if ((uint32_t)ptr != (uint32_t)HEAP_ADDRESS)
-                print("HUI");
-        print("23");
+        //init kernel heap
+        kheap_init();
+        //Get paging
+        kernel_chunk = paging_new_chunk(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
+        //Switch kernel_chunk
+        paging_switch(kernel_chunk->directory_entry);
+        //enable_paging
+        enable_paging();
+        //literally
+        enable_interrupts();
+
+        print("Everything is OK");
 }

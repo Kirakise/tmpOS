@@ -17,6 +17,9 @@
 #define VGA_HEIGHT 20
 
 
+#define FILE_MAX_PATH 100
+
+
 
 //Цвета
 #define BLACK 0

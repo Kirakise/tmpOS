@@ -1,7 +1,9 @@
-ASM = ./build/kernel.asm.o ./build/idt/idt.asm.o ./build/io/io.asm.o
-SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c
+ASM = ./build/kernel.asm.o ./build/idt/idt.asm.o ./build/io/io.asm.o ./build/memory/paging.asm.o
+SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c
 INCS = -I./src
 OBJS = $(SRCS:.c=.o)
+ASMSRCS = ./src/kernel.asm ./src/idt/idt.asm ./src/io/io.asm ./src/memory/paging.asm
+ASMOBJS = $(ASMSRCS:.asm=.asm.o)
 CC = i686-elf-gcc
 FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
 
@@ -15,31 +17,23 @@ all: ./bin/boot.bin ./bin/kernel.bin
 	dd if=/dev/zero bs=512 count=100 >> ./bin/os.bin
 
 
-./bin/kernel.bin: $(ASM) $(OBJS)
-	i686-elf-ld -g -relocatable $(ASM) $(OBJS) -o ./build/kernelfull.o
-	i686-elf-gcc $(FLAGS) -T ./linker.ld -o ./bin/kernel.bin -ffreestanding -O0 -nostdlib ./build/kernelfull.o
-
-./build/idt/idt.asm.o:
-	nasm -f elf -g ./src/idt/idt.asm -o ./build/idt/idt.asm.o
-
+./bin/kernel.bin: $(ASMOBJS) $(OBJS)
+	i686-elf-ld -g -relocatable $(ASMOBJS) $(OBJS) -o ./src/kernelfull.o
+	i686-elf-gcc $(FLAGS) -T ./linker.ld -o ./bin/kernel.bin -ffreestanding -O0 -nostdlib ./src/kernelfull.o
 
 ./bin/boot.bin: ./src/boot/boot.asm
 	nasm -f bin ./src/boot/boot.asm -o ./bin/boot.bin
 
-./build/kernel.asm.o: ./src/kernel.asm
-	nasm -f elf -g ./src/kernel.asm -o ./build/kernel.asm.o
-
-./build/io/io.asm.o:
-	nasm -f elf -g ./src/io/io.asm -o ./build/io/io.asm.o
+%.asm.o: %.asm
+	nasm -f elf -g $< -o $@
 
 %.o: %.c
 	$(CC) $(FLAGS) $(INCS) -c $< -o $@
 
 clean:
-	rm -f ./bin/boot.bin ./bin/os.bin $(ASM) ./bin/kernel.bin $(OBJS) ./build/kernelfull.o
-
+	rm -f ./bin/boot.bin ./bin/os.bin $(ASMOBJS) ./bin/kernel.bin $(OBJS) ./src/kernelfull.o
 
 run:
-	qemu-system-x86_64 -hda ./bin/os.bin
+	qemu-system-i386 -hda ./bin/os.bin
 
 re: clean bash
