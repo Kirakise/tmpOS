@@ -2,6 +2,7 @@
 #include "../memory/status.h"
 #include "../memory/kheap.h"
 #include "../utils.h"
+#include "fat/fat16.h"
 
 struct filesystem *filesystems[MAX_FILE_SYSTEMS];
 struct file_descriptor* file_descriptors[MAX_FILE_DESCRIPTORS];
@@ -21,13 +22,13 @@ void fs_insert_filesystem(struct filesystem *filesystem){
                 //panic();
         }
         fs = fs_get_free_filesystem();
-        if (!fs)
+        if (!fs) {}
                 //panic
         *fs = filesystem;
 }
 
 static void fs_static_load(){
-        //fs_insert_filesystem(fat16_init());
+        fs_insert_filesystem(fat16_init());
 }
 
 void fs_load(){
@@ -64,7 +65,11 @@ static struct file_descriptor *file_get_descriptor(int fd){
 
 struct filesystem *fs_resolve(struct disk *disk){
         for (int i = 0; i < MAX_FILE_SYSTEMS; i++)
-                if (filesystems[i] != 0 && !filesystems[i]->resolve(disk))
+                if (filesystems[i] && !(filesystems[i]->resolve(disk)))
                         return filesystems[i];
         return 0;
+}
+
+int fopen(const char *filename, const char *mode){
+        return -EIO;
 }

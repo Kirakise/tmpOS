@@ -76,3 +76,12 @@ int memcmp(const void *ptr1, const void *ptr2, uint32_t n){
                         return  ((char *)ptr1)[i] - ((char *)ptr2)[i];
         return  ((char *)ptr1)[n] - ((char *)ptr2)[n];
 }
+
+
+char *strcpy(char *dest, char *src){
+        char *tmp = dest;
+        while (*src)
+                *dest++ = *src++;
+        *dest = 0;
+        return tmp;
+}

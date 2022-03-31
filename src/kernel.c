@@ -39,14 +39,17 @@ uint16_t get_char(uint8_t ch, uint8_t fore_color, uint8_t back_color)
 }
 
 void kernel_start()
-{
-        disk_search_and_init();
-        //Set interrupt table
-        idt_init();
+{ 
         //Clear termianl window
         clear_term();
         //init kernel heap
         kheap_init();
+        //inti filesystems
+        fs_init();
+        //With filesystems on search the disks
+        disk_search_and_init();
+        //Set interrupt table
+        idt_init();
         //Get paging
         kernel_chunk = paging_new_chunk(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
         //Switch kernel_chunk

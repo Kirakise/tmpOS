@@ -9,8 +9,11 @@
 struct disk{
         uint32_t type;
         uint32_t sector_size;
+        uint32_t id;
 
         struct filesystem *fs;
+        //private data of filesystem;
+        void *fs_private;
 };
 
 struct disk *disk_get(int index);

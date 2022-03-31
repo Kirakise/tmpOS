@@ -6,7 +6,6 @@
 struct disk disk;
 
 int disk_read_sector(int lba, int total, void *buf){
-
         outb(0x1F6, (lba >> 24) | 0xE0);
         outb(0x1F2, total);
         outb(0x1F3, (uint8_t)(lba & 0xff));

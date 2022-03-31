@@ -10,3 +10,5 @@ void *memset(void *ptr, char c, int size);
 bool isdigit(char c);
 int strnlen(const char *str, uint32_t max);
 int memcmp(const void *ptr1, const void *ptr2, uint32_t n);
+char *strcpy(char *dest, char *src);
+
