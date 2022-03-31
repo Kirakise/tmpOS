@@ -1,5 +1,5 @@
 ASM = ./build/kernel.asm.o ./build/idt/idt.asm.o ./build/io/io.asm.o ./build/memory/paging.asm.o
-SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c
+SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c ./src/fs/file.c
 INCS = -I./src
 OBJS = $(SRCS:.c=.o)
 ASMSRCS = ./src/kernel.asm ./src/idt/idt.asm ./src/io/io.asm ./src/memory/paging.asm
@@ -14,8 +14,10 @@ all: ./bin/boot.bin ./bin/kernel.bin
 	rm -f ./bin/os.bin
 	dd if=./bin/boot.bin >> ./bin/os.bin
 	dd if=./bin/kernel.bin >> ./bin/os.bin
-	dd if=/dev/zero bs=512 count=100 >> ./bin/os.bin
-
+	dd if=/dev/zero bs=1048576 count=16 >> ./bin/os.bin
+	sudo mount -t vfat ./bin/os.bin /mnt/d
+	sudo cp hello.txt /mnt/d/
+	sudo umount /mnt/d
 
 ./bin/kernel.bin: $(ASMOBJS) $(OBJS)
 	i686-elf-ld -g -relocatable $(ASMOBJS) $(OBJS) -o ./src/kernelfull.o

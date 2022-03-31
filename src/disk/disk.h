@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include "../fs/file.h"
 
 #define DISK_TYPE_REAL 0
 #define DISK_TYPE_VIRTUAL 1
@@ -8,6 +9,8 @@
 struct disk{
         uint32_t type;
         uint32_t sector_size;
+
+        struct filesystem *fs;
 };
 
 struct disk *disk_get(int index);

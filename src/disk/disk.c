@@ -34,6 +34,7 @@ void disk_search_and_init(){
         memset(&disk, 0, sizeof(disk));
         disk.type = DISK_TYPE_REAL;
         disk.sector_size = 512;
+        disk.fs = fs_resolve(&disk);
 }
 
 

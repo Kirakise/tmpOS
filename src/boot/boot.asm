@@ -2,7 +2,7 @@ org 0x7c00
 
 
 [BITS 16]
-jmp 0:_start
+;jmp 0:start
 
 
 KER_CODE_SEG equ gdt_ker_code - gdt_start
@@ -11,11 +11,35 @@ USR_CODE_SEG equ gdt_usr_code - gdt_start
 USR_DATA_SEG equ gdt_usr_data - gdt_start
 
 
-_start:
-        jmp short start
-        nop
+;_start:
+jmp short start
+nop
 
-times 33 db 0 ; for bios not to ruin the bootloader
+;FAT16 Header
+OEMIdentifier           db 'MyNewOS ' ; Should be 8 bytes
+BytesPerSector          dw 0x200
+SectorsPerCluster       db 0x80
+ReservedSectors         dw 200
+FATCopies               db 2
+RootDirEntries          dw 0x40
+NumSectors              dw 0x0
+MediaType               db 0xF8
+SectorsPerFat           dw 0x100
+SectorsPerTrack         dw 0x20
+NumberOfHeads           dw 0x40
+HiddenSectors           dd 0x00
+SectorsBig              dd 0x773594
+
+;Extended BPB
+
+DriveNumber             db 0x80
+WinNTBit                db 0x00
+Signature               db 0x29
+VolumeID                dd 0xD105
+VolumeIDString          db 'MyNewOs111 ' ; Should be 11 bytes
+SystemIDString          db 'FAT16123' ; Should be 8 bytes
+
+
 
 start:
         jmp 0:_true_start
