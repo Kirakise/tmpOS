@@ -85,3 +85,52 @@ char *strcpy(char *dest, char *src){
         *dest = 0;
         return tmp;
 }
+
+
+int strcmp(char *s1, char *s2){
+        while (*s1 == *s2 && *s1){
+                ++s1;
+                ++s2;
+        }
+        return *s1 - *s2;
+}
+
+
+int strncmp(char *s1, char *s2, uint32_t n){
+        for (uint32_t i = 0; i < n; i++){
+                if (s1[i] != s2[i] || !s1[i])
+                        return s1[i] - s2[i];
+        }
+        return 0;
+}
+
+uint32_t strnlen_terminator(const char *str, uint32_t len, char c){
+        for (uint32_t i = 0; i < len; i++){
+                if (str[i] == '\0' || str[i] == c)
+                        return i;
+        }
+        return 0;
+}
+
+uint8_t tolower(char c){
+        if (c >= 'A' && c <= 'Z')
+                return c + 32;
+        else
+                return c;
+}
+
+int istrncmp(const char *s1, const char *s2, uint32_t n){
+        while(n-- > 0){
+                if(tolower(*s1) != tolower(*s2))
+                        return (tolower(*s1) - tolower(*s2));
+        }
+        return 0;
+}
+
+
+void *memcpy(void *dest, void *src, uint32_t n){
+        for (uint32_t i = 0; i < n; ++i){
+                ((char *)dest)[i] = ((char *)src)[i];
+        }
+        return dest;
+}

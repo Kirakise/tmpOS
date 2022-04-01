@@ -44,25 +44,23 @@ void kernel_start()
         clear_term();
         //init kernel heap
         kheap_init();
-        //inti filesystems
-        fs_init();
-        //With filesystems on search the disks
-        disk_search_and_init();
-        //Set interrupt table
-        idt_init();
-        //Get paging
+         //Get paging
         kernel_chunk = paging_new_chunk(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
         //Switch kernel_chunk
         paging_switch(kernel_chunk->directory_entry);
         //enable_paging
         enable_paging();
+        //inti filesystems
+        fs_init();
+        //With filesystems on search the disks
+        disk_search_and_init();
+        //Set interrupt table
+        idt_init(); 
         //literally
         enable_interrupts();
-
-        struct disk_stream *stream = disk_streamer_new(0);
-        disk_stream_seek(stream, 0x4E3);
-        uint8_t c = 0;
-        disk_stream_read(stream, &c, 1);
-        (void)c;
-        print("Everything is OK");
+        int fd = fopen("0:/hello.txt", "r");
+        if (fd){
+                print("hello.txt is open now\n");
+        }
+        print("Everything is OK\n");
 }

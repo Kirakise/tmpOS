@@ -44,8 +44,12 @@ extern uint16_t *video_mem;
 extern uint8_t term_col;
 extern uint8_t term_row;
 
+#define ERROR(value) (void*)(value)
+#define ERROR_I(value) (int)(value)
+#define ISERR(value) ((int)value < 0)
 
 void kernel_main();
 uint16_t get_char(uint8_t ch, uint8_t fore_color, uint8_t back_color);
+
 
 
