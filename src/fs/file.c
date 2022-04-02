@@ -25,7 +25,7 @@ void fs_insert_filesystem(struct filesystem *filesystem){
                 panic("NO FILESYSTEM PROVIDED\n", 1);
         }
         fs = fs_get_free_filesystem();
-        if (!fs) {}
+        if (!fs)
                 panic("COULDN'T INSERT FILESYSTEM", 1);
         *fs = filesystem;
 }
@@ -35,7 +35,7 @@ static void fs_static_load(){
 }
 
 void fs_load(){
-        memset(filesystems, 0, sizeof(filesystems));
+        memset(filesystems, 0, sizeof(struct filesystem) * MAX_FILE_SYSTEMS);
         fs_static_load();
 
 }

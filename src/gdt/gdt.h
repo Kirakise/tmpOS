@@ -1,0 +1,23 @@
+#pragma once
+#include <stdint.h>
+
+
+struct gdt{
+        uint16_t segment;
+        uint16_t base_first;
+        uint8_t low_base;
+        uint8_t acess;
+        uint8_t high_flags;
+        uint8_t high_base;
+}__attribute__((packed));
+
+struct gdt_structured{
+        uint32_t base;
+        uint32_t limit;
+        uint8_t type;
+};
+
+void gdt_load(struct gdt *gdt, int size);
+void gdt_structured_to_gdt(struct gdt *gdt, struct gdt_structured *gdt_structured, int total_entries);
+
+#define TOTAL_SEGMENTS 6

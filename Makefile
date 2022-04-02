@@ -1,8 +1,8 @@
 ASM = ./build/kernel.asm.o ./build/idt/idt.asm.o ./build/io/io.asm.o ./build/memory/paging.asm.o
-SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c ./src/fs/file.c ./src/fs/fat/fat16.c
+SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c ./src/fs/file.c ./src/fs/fat/fat16.c ./src/gdt/gdt.c 
 INCS = -I./src
 OBJS = $(SRCS:.c=.o)
-ASMSRCS = ./src/kernel.asm ./src/idt/idt.asm ./src/io/io.asm ./src/memory/paging.asm
+ASMSRCS = ./src/kernel.asm ./src/idt/idt.asm ./src/io/io.asm ./src/memory/paging.asm ./src/gdt/gdt.asm ./src/task/tss.asm
 ASMOBJS = $(ASMSRCS:.asm=.asm.o)
 CC = i686-elf-gcc
 FLAGS = -g -ffreestanding -falign-jumps -falign-functions -falign-loops -fstrength-reduce -fomit-frame-pointer -finline-functions -Wno-unused-function -fno-builtin -Werror -Wno-unused-label -Wno-cpp -Wno-unused-parameter -nostdlib -nostartfiles -nodefaultlibs -Wall -O0 -Iinc
