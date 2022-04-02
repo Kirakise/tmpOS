@@ -38,6 +38,12 @@ uint16_t get_char(uint8_t ch, uint8_t fore_color, uint8_t back_color)
   return ax;
 }
 
+
+void panic(const char *msg, uint8_t mode){
+        print(msg);
+        if (mode && 1) {}
+}
+
 void kernel_start()
 { 
         //Clear termianl window
@@ -60,7 +66,15 @@ void kernel_start()
         enable_interrupts();
         int fd = fopen("0:/hello.txt", "r");
         if (fd){
-                print("hello.txt is open now\n");
+                print("hello2.txt is open now\n");
+                char buf[20];
+                fseek(fd, 2, SEEK_SET);
+                fread(buf, 20, 1, fd);
+                struct file_stat s;
+                fstat(fd, &s);
+                fclose(fd);
+                print("123");
+                print(buf);
         }
         print("Everything is OK\n");
 }

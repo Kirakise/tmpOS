@@ -121,7 +121,7 @@ uint8_t tolower(char c){
 
 int istrncmp(const char *s1, const char *s2, uint32_t n){
         while(n-- > 0){
-                if(tolower(*s1) != tolower(*s2))
+                if(tolower(*s1++) != tolower(*s2++))
                         return (tolower(*s1) - tolower(*s2));
         }
         return 0;
