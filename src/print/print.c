@@ -21,7 +21,7 @@ static char* itoa(int base, int num){
                 return 0;
         ret[size] = 0;
         copy = num > 0 ? num : -num;
-        while (--size){
+        while (--size >= 0){
                 int tmp = copy % base;
                 if (tmp < 10)
                         ret[size] = tmp + '0'; 

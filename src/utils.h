@@ -19,4 +19,6 @@ void *memcpy(void *dest, void *src, uint32_t n);
 int kwrite(int fd, char *str, int size);
 char *strdup(const char *s);
 char *strncpy(char *dest, const char *src, uint32_t n);
+void memwrite(void *addr, const char *str);
+void hexdump(void *addr, uint32_t count);
 

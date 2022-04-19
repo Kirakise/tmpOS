@@ -3,6 +3,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 #include "memory/kheap.h"
+#include "print/print.h"
 
 size_t strlen(const char *str){
         size_t count = 0;
@@ -160,4 +161,37 @@ char *strncpy(char *dest, const char *src, uint32_t n){
                 dest[i] = src[i];
         }
         return dest;
+}
+
+void hexdump(void *addr, uint32_t count){
+        uint8_t *c = addr;
+        uint32_t offset = 0;
+        char tmp[5];
+        tmp[4] = 0;
+        if (count > 100)
+                return ;
+        for (uint32_t i = 0; i < (count - count % 4); i += 4){
+
+                printk("%p ", offset);
+                printk("%X %X %X %X ", *c, *(c + 1), *(c + 2), *(c + 3));
+                memcpy(tmp, c, 4);
+                printk ("%s\n", tmp);
+                offset += 4;
+                c += 4;
+        }
+        if (count % 4){
+                printk("%p ", offset);
+                for (uint32_t j = 0; j < count % 4; j++)
+                        printk("%X ", *(c + j));
+                memcpy(tmp, c, offset % 4);
+                tmp[offset % 4] = 0;
+                printk("%s\n", tmp);
+        }
+}
+
+
+void memwrite(void *addr, const char *str){
+        char *s = addr;
+        for (int i = 0; i < strlen(str); i++)
+                s[i] = str[i]; 
 }

@@ -77,6 +77,8 @@ void *heap_malloc_blocks(uint32_t total_blocks, struct heap *heap){
 }
 
 void *heap_malloc(uint32_t size, struct heap *heap){
+        if (size == 0)
+                return 0;
         uint32_t tmp = heap_align_value(size) / BLOCK_SIZE;
         return heap_malloc_blocks(tmp, heap);
 }

@@ -97,11 +97,13 @@ void kernel_start()
         tss_load(0x30);
 
 
-        struct process *process = 0;
-        if(process_load("0:/blank.bin", &process))
-                panic("PROBLEM WITH PROCESS\n", 1);
-        printk("%i", process->task->registers.ss);
-        task_run_first_task();
+        hexdump(0x810, 10);
+
+        //struct process *process = 0;
+        //if(process_load("0:/blank.bin", &process))
+        //        panic("PROBLEM WITH PROCESS\n", 1);
+        //printk("%i", process->task->registers.ss);
+        //task_run_first_task();
  
         print("Everything is OK\n");
 }
