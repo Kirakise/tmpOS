@@ -31,6 +31,8 @@ _start:
         mov al, 00000001b
         out 0x21, al ; End remap
 
+        xor ebp, ebp
+
         call kernel_start
 
         jmp $ ; HLT

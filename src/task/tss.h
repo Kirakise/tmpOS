@@ -2,7 +2,7 @@
 #include <stdint.h>
 struct tss{
         uint32_t link;
-        uint32_t esp0; //rootfs-pkgs.txt stack pointer
+        uint32_t esp0; //stack pointer
         uint32_t ss0; //stack segment
         uint32_t esp1;
         uint32_t esp2;
@@ -30,3 +30,4 @@ struct tss{
 
 
 void tss_load(int tss_segment);
+uint32_t walk_stack(uint32_t *arr, uint32_t max);

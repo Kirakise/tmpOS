@@ -18,6 +18,8 @@
 
 
 #define FILE_MAX_PATH 100
+#define MAX_PROGRAM_ALLOCATIONS 1024
+#define MAX_PROCESSES 12
 
 
 

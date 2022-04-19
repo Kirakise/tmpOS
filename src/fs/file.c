@@ -6,6 +6,7 @@
 #include "fat/fat16.h"
 #include "../kernel.h"
 #include <stdint.h>
+#include "../print/print.h"
 
 struct filesystem *filesystems[MAX_FILE_SYSTEMS];
 struct file_descriptor* file_descriptors[MAX_FILE_DESCRIPTORS];

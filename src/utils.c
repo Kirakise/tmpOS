@@ -2,6 +2,7 @@
 #include "kernel.h"
 #include <stddef.h>
 #include <stdbool.h>
+#include "memory/kheap.h"
 
 size_t strlen(const char *str){
         size_t count = 0;
@@ -12,7 +13,7 @@ size_t strlen(const char *str){
 }
 
 
-void inline terminal_putchar(uint8_t x, uint8_t y, char c, char fore_color, char back_color)
+void terminal_putchar(uint8_t x, uint8_t y, char c, char fore_color, char back_color)
 {
         video_mem[y * VGA_WIDTH + x] = get_char(c, fore_color, back_color);
 }
@@ -63,7 +64,7 @@ bool isdigit(char c){
 
 
 int strnlen(const char *str, uint32_t max){
-        size_t count = 0;
+        uint32_t count = 0;
 
         while (*str++ != 0 || count > max)
                 count++;
@@ -131,6 +132,32 @@ int istrncmp(const char *s1, const char *s2, uint32_t n){
 void *memcpy(void *dest, void *src, uint32_t n){
         for (uint32_t i = 0; i < n; ++i){
                 ((char *)dest)[i] = ((char *)src)[i];
+        }
+        return dest;
+}
+
+int kwrite(int fd, char *str, int size){
+        int i = 0;
+        for (i = 0; i < size; i++)
+                terminal_writechar(str[i], RED, BLACK);
+        return i;
+}
+
+char *strdup(const char *s){
+        uint32_t len = strlen(s);
+        char *ret = kmalloc(len);
+        for (uint32_t i = 0; i < len; i++){
+                ret[i] = s[i];
+        }
+        ret[len] = 0;
+        return ret;
+}
+
+char *strncpy(char *dest, const char *src, uint32_t n){
+        if (!dest || !src || dest == src)
+                return dest;
+        for (int i = 0; i < n && src[i]; i++){
+                dest[i] = src[i];
         }
         return dest;
 }

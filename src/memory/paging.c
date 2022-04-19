@@ -2,6 +2,7 @@
 #include "kheap.h"
 #include "status.h"
 #include "../utils.h"
+#include <stdint.h>
 
 
 
@@ -24,6 +25,17 @@ struct paging_4gb_chunk *paging_new_chunk(uint8_t flags){
 }
 
 
+void paging_free_chunk(struct paging_4gb_chunk *chunk){
+        for (int i = 0; i < 1024; i++){
+                uint32_t entry = chunk->directory_entry[i];
+                uint32_t *table = (uint32_t *)(entry & 0xfffff000);
+                kfree(table);
+        }
+        kfree(chunk->directory_entry);
+        kfree(chunk);
+}
+
+
 void paging_switch(uint32_t *directory){
         paging_load_dir(directory);
         current_dir = directory;
@@ -34,7 +46,7 @@ uint32_t *paging_4gb_chunk_get_dir(struct paging_4gb_chunk *chunk){
 }
 
 uint8_t paging_is_aligned(void *addr){
-        return !((uint32_t)addr / PAGING_PAGE_SIZE);
+        return !((uint32_t)addr % PAGING_PAGE_SIZE);
 }
 
 uint32_t paging_get_indexes(void *virtual_adress, uint32_t *dir_index_out, uint32_t *table_index){
@@ -57,4 +69,38 @@ uint32_t paging_set(uint32_t *dir, void *virtual_adress, uint32_t val){
         uint32_t *table = (uint32_t *)(entry & 0xffff0000); //get address only
         table[table_index] = val;
         return 0;
+}
+
+int paging_map(uint32_t *dir, void *virt, void *phys, int flags){
+        if (((uint32_t)virt % PAGING_PAGE_SIZE) || ((uint32_t)phys % PAGING_PAGE_SIZE))
+                return -EINVARG;
+        return paging_set(dir, virt, (uint32_t)phys | flags);
+}
+
+int paging_map_range(uint32_t *dir, void *virt, void *phys, int count, int flags){
+        int res = 0;
+        for (int i = 0; i < count; i++){
+                res = paging_map(dir, virt, phys, flags);
+                if (res < 0)
+                        break;
+                virt += PAGING_PAGE_SIZE;
+                phys += PAGING_PAGE_SIZE;
+        }
+        return res;
+}
+
+int paging_map_to(uint32_t *dir, void *virt, void *phys, void *phys_end, int flags){
+        int res;
+        if ((uint32_t)virt % PAGING_PAGE_SIZE)
+                return -EINVARG;
+        if ((uint32_t)phys_end % PAGING_PAGE_SIZE)
+                return -EINVARG;
+        if ((uint32_t)phys % PAGING_PAGE_SIZE)
+                return -EINVARG;
+        if ((uint32_t)phys_end < (uint32_t)phys)
+                return -EINVARG;
+        uint32_t total_bytes = phys_end - phys;
+        int total_pages = total_bytes / PAGING_PAGE_SIZE;
+        res = paging_map_range(dir, virt, phys, total_pages, flags);
+        return res;
 }

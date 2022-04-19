@@ -6,6 +6,8 @@
 #include "../../memory/kheap.h"
 #include "../../disk/streamer.h"
 #include "../../kernel.h"
+#include "../../task/tss.h"
+#include "../../print/print.h"
 
 
 #define FAT16_SIG 0x29
@@ -485,7 +487,6 @@ void *fat16_open(struct disk *disk, struct path_part *path, uint32_t mode){
         desc->item = fat16_get_directory_entry(disk, path);
         if (desc->item == 0)
                 return ERROR(-EIO);
-
         return desc; 
 }
 
@@ -505,7 +506,6 @@ int fat16_read(struct disk *disk, void *desc, uint32_t size, uint32_t nmemb, cha
         }
 
         res = nmemb;
-        return res;
         return res;
 }
 
