@@ -69,7 +69,7 @@ static char *makeaddr(const char *s){
         int i, j = 0;
         for (i = 0; i < 8 - len; i++)
                 ret[i + 2] = '0';
-        while (--len > 0)
+        while (len-- > 0)
                 ret[i++ + 2] = s[j++];
         return ret;
 }

@@ -4,6 +4,7 @@
 #include "../memory/kheap.h"
 #include "../fs/file.h"
 #include "../memory/paging.h"
+#include "../print/print.h"
 struct process *cur_process = 0;
 
 struct process *processes[MAX_PROCESSES];
@@ -60,13 +61,18 @@ static uint32_t paging_align_address(uint32_t addr){
 }
 
 int process_map_binary(struct process *process){
-        return paging_map_to(process->task->page_dir->directory_entry, (void *)PROGRAM_VIRTUAL_ADDRESS, process->ptr,
+        return paging_map_to(process->task->page_dir, (void *)PROGRAM_VIRTUAL_ADDRESS, process->ptr,
                         (void *)paging_align_address(process->ptr + process->size), PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL | PAGING_IS_WRITABLE); 
 }
 
 int process_map_memory_process(struct process *process){
         int res = 0;
         res = process_map_binary(process);
+        if (res < 0)
+          return res;
+        //map stack
+        res = paging_map_to(process->task->page_dir, (void *)PROGRAM_VIRTUAL_STACK_ADDRESS_END, paging_align_address(process->stack),
+           (void *)paging_align_address(process->stack + USER_PROGRAM_STACK_SIZE), PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL | PAGING_IS_WRITABLE);
         return res;
 }
 
@@ -81,7 +87,7 @@ int process_load(const char *filename, struct process **process){
         int res = 0;
         int process_slot = process_get_free_slot();
         if (process_slot == -EISTKN)
-                return -ENOMEM;
+                return -EISTKN;
         res = process_load_for_slot(filename, process, process_slot);
         return res;
 }
@@ -112,6 +118,7 @@ int process_load_for_slot(const char *filename, struct process **process, int pr
 
         strncpy(_process->filename, filename, sizeof(_process->filename));
         _process->id = process_slot;
+        _process->stack = stack_ptr;
         //Create Task now
         task = task_new(_process);
         if (ERROR_I(task) == 0){

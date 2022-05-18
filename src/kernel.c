@@ -12,6 +12,7 @@
 #include "task/task.h"
 #include "task/process.h"
 #include "print/print.h"
+#include "isr80h/isr80h.h"
 
 uint16_t *video_mem = (uint16_t *)(0xB8000);
 uint8_t term_col;
@@ -50,17 +51,22 @@ void panic(const char *msg, uint8_t mode){
         while (mode) {}
 }
 
-struct tss tss_ker, tss_usr;
+void kernel_page(){
+  kernel_registers();
+  paging_switch(kernel_chunk->directory_entry);
+}
+
+struct tss tss;
 //struct gdt gdt_real[TOTAL_SEGMENTS];
 struct gdt *gdt_real = (struct gdt *)0x800;
 struct gdt_structured gdt_structured[TOTAL_SEGMENTS] = {
         {.base = 0x00, .limit = 0x00, .type = 0x00}, //null
         {.base = 0x00, .limit = 0xffffffff, .type = 0x9A}, //KerCode
         {.base = 0x00, .limit = 0xffffffff, .type = 0x92}, //KerData
-        {.base = 0x00, .limit = 0xffffffff, .type = 0xf8}, //UserCode
-        {.base = 0x00, .limit = 0xffffffff, .type = 0xf2}, //UserData
-        {.base = (uintptr_t)&tss_ker, .limit = sizeof(tss_ker), .type = 0x89}, //TSS_KER
-        {.base = (uintptr_t)&tss_usr, .limit = sizeof(tss_usr), .type = 0xE9} //TSS_USR
+        {.base = 0x00, .limit = 0xffffffff, .type = 0xF8}, //UserCode
+        {.base = 0x00, .limit = 0xffffffff, .type = 0xF2}, //UserData
+        {.base = (uintptr_t)&tss, .limit = sizeof(tss), .type = 0x89}, //TSS_KER
+        //{.base = (uintptr_t)&tss_usr, .limit = sizeof(tss_usr), .type = 0xE9} //TSS_USR
 };
 
 void kernel_start()
@@ -73,37 +79,38 @@ void kernel_start()
         gdt_load(gdt_real, sizeof(struct gdt) * TOTAL_SEGMENTS);
         //init kernel heap
         kheap_init();
-         //Get paging
-        kernel_chunk = paging_new_chunk(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
-        //Switch kernel_chunk
-        paging_switch(kernel_chunk->directory_entry);
-        //enable_paging
-        enable_paging();
-       //inti filesystems
+        //inti filesystems
         fs_init();
         //With filesystems on search the disks
         disk_search_and_init();
         //Set interrupt table
         idt_init(); 
         //Set TSS
-        memset(&tss_ker, 0, sizeof(tss_ker));
-        tss_ker.esp0 = 0x200000;
-        tss_ker.ss0 = 0x10; //0x10 offset for kernel data
+        memset(&tss, 0, sizeof(tss));
+        tss.esp0 = 0x200000;
+        tss.ss0 = 0x10; //0x10 offset for kernel data
         tss_load(0x28); //0x28 is offset for gdt_real
-        
-        memset(&tss_usr, 0, sizeof(tss_usr));
-        tss_usr.esp0 = 0x600000;
-        tss_usr.ss0 = 0x20;
-        tss_load(0x30);
+         //Get paging
+        kernel_chunk = paging_new_chunk(PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
+        //Switch kernel_chunk
+        paging_switch(kernel_chunk->directory_entry);
+        //enable_paging
+        enable_paging();
+        isr80h_register_commands();
+
+//        hexdump(0x1FFFAF, 100);
 
 
-        hexdump(0x810, 10);
-
-        //struct process *process = 0;
-        //if(process_load("0:/blank.bin", &process))
-        //        panic("PROBLEM WITH PROCESS\n", 1);
-        //printk("%i", process->task->registers.ss);
-        //task_run_first_task();
+        struct process *process = 0;
+        char tmp[3];
+        tmp[2] = 0;
+        int fd = fopen("0:/blank.bin", "r");
+        fread(tmp, 2, 1, fd);
+        hexdump(tmp, 4);
+        if(process_load("0:/blank.bin", &process))
+                panic("PROBLEM WITH PROCESS\n", 1);
+        printk("%i\n", process->task->registers.ss);
+        task_run_first_task();
  
         print("Everything is OK\n");
 }

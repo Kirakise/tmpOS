@@ -175,6 +175,9 @@ void hexdump(void *addr, uint32_t count){
                 printk("%p ", offset);
                 printk("%X %X %X %X ", *c, *(c + 1), *(c + 2), *(c + 3));
                 memcpy(tmp, c, 4);
+                for (int i = 0; i < 4; i++)
+                  if (tmp[i] <= ' ')
+                    tmp[i] = '.';
                 printk ("%s\n", tmp);
                 offset += 4;
                 c += 4;

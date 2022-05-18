@@ -20,4 +20,4 @@ struct gdt_structured{
 void gdt_load(struct gdt *gdt, int size);
 void gdt_structured_to_gdt(struct gdt *gdt, struct gdt_structured *gdt_structured, int total_entries);
 
-#define TOTAL_SEGMENTS 7
+#define TOTAL_SEGMENTS 6

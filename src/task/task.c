@@ -3,6 +3,7 @@
 #include "../memory/kheap.h"
 #include "../kernel.h"
 #include "../print/print.h"
+#include "../idt/idt.h"
 
 //Running task
 struct task *curr_task = 0;
@@ -22,6 +23,53 @@ int task_switch(struct task *task){
         return 0;
 }
 
+int task_save_state(struct task *task, struct interrupt_frame *frame){
+  task->registers.ip = frame->ip;
+  task->registers.cs = frame->cs;
+  task->registers.flags = frame->flags;
+  task->registers.esp = frame->esp;
+  task->registers.ss = frame->ss;
+  task->registers.eax = frame->eax;
+  task->registers.ebp = frame->ebp;
+  task->registers.ecx = frame->ecx;
+  task->registers.edi = frame->edi;
+  task->registers.edx = frame->edx;
+  task->registers.esi = frame->esi;
+  return 0;
+}
+
+void task_current_save_state(struct interrupt_frame *frame){
+  if (task_current() == 0)
+    panic("No current task to save", 1);
+  
+  struct task* task = task_current();
+  task_save_state(task, frame);
+}
+
+
+int copy_string_from_task(struct task *task, void *virtual, void *phys, int max){
+  if (max >= PAGING_PAGE_SIZE)
+    return -EINVARG;
+  int res = 0;
+  char *tmp = kzalloc(max);
+  if (!tmp)
+    return -ENOMEM;
+  uint32_t *task_directory = task->page_dir->directory_entry;
+  uint32_t old_entry = paging_get(task_directory, tmp);
+  paging_map(task_directory, tmp, tmp, PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
+  paging_switch(task->page_dir->directory_entry);
+  strncpy(tmp, virtual, max);
+  kernel_page();
+
+  res = paging_set(task_directory, tmp, old_entry);
+  if (res < 0){
+    kfree(tmp);
+    return -EIO;
+  }
+  strncpy(phys, tmp, max);
+  return 0;
+}
+
 int task_page(){
         user_registers();
         task_switch(curr_task);
@@ -32,7 +80,8 @@ void task_run_first_task(){
         if (!curr_task)
                 panic("No first task to run\n", 1);
         task_switch(task_head);
-        printk("%i", task_head->registers.ss);
+        printk("%p\n", task_head);
+        //hexdump(PROGRAM_VIRTUAL_STACK_ADDRESS_START, 10);
         task_return(&task_head->registers);
 }
 
@@ -100,4 +149,19 @@ void task_free(struct task *task){
         task_list_remove(task);
 
         kfree(task);
+}
+
+void task_page_task(struct task *task){
+  user_registers();
+  paging_switch(task->page_dir->directory_entry);
+}
+
+
+void *task_get_stack_item(struct task *task, int index){
+        void *result = 0;
+        uint32_t *sp_ptr = (uint32_t *) task->registers.esp;
+        task_page_task(task);
+        result = (void *)sp_ptr[index];
+        kernel_page();
+        return result;
 }

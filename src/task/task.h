@@ -4,6 +4,8 @@
 #include "../memory/status.h"
 #include "process.h"
 
+struct interrupt_frame;
+
 struct registers{
         uint32_t edi;
         uint32_t esi;
@@ -43,3 +45,8 @@ void user_registers();
 int task_switch(struct task *task);
 int task_page();
 void task_run_first_task();
+
+void task_current_save_state(struct interrupt_frame *frame);
+int copy_string_from_task(struct task *task, void *virt, void *phys, int max);
+void *task_get_stack_item(struct task *task, int index);
+void task_page_task(struct task *task);

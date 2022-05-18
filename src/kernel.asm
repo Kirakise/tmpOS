@@ -2,6 +2,7 @@
 
 global _start
 global _problem
+global kernel_registers
 extern kernel_start
 
 KER_CODE_SEG equ 0x08
@@ -37,6 +38,12 @@ _start:
 
         jmp $ ; HLT
 
-
+kernel_registers:
+        mov ax, 0x10
+        mov ds, ax
+        mov es, ax
+        mov gs, ax
+        mov fs, ax
+        ret
 
 times 512 - ($ - $$) db 0

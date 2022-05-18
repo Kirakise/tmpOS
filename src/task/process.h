@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include "../kernel.h"
+#include "../keyboard/keyboard.h"
 
 struct process{
         uint16_t id;
@@ -16,6 +17,12 @@ struct process{
         void *stack;
         //Size of data pointed by ptr
         uint32_t size;
+
+        struct keyboard_buffer{
+          char buffer[KEYBOARD_BUFFER_SIZE];
+          uint32_t tail;
+          uint32_t head;
+        } keyboard;
 };
 
 int process_load_for_slot(const char *filename, struct process **process, int process_slot);

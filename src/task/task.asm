@@ -22,7 +22,7 @@ restore_general_purpose_registers:
         ret
 
 task_return:
-        push ebp
+        ;push ebp
         mov ebp, esp
 
         ;acess data passed to us
@@ -37,21 +37,24 @@ task_return:
         or eax, 0x200
         push eax
         ;push code seg
+
         push dword [ebx + 32]
         ;push ip to execute
         push dword [ebx + 28]
 
         ;Setup segment registers
-        xor ax, ax
-        mov ax, [ebx + 44]
+
+        mov ax, word [ebx + 44]
         mov ds, ax
         mov es, ax
         mov fs, ax
         mov gs, ax
 
+
         push dword [ebp + 4]
         call restore_general_purpose_registers
         add esp, 4
+
         ; leave kernel land
         iretd
 
