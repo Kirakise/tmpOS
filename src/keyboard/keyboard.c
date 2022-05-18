@@ -2,12 +2,14 @@
 #include "../memory/status.h"
 #include "../task/process.h"
 #include "../task/task.h"
-
+#include "PS2.h"
 
 static struct keyboard *keyboard_list_head = 0;
 static struct keyboard *keyboard_list_last = 0;
 
-void keyboard_init(){}
+void keyboard_init(){
+  keyboard_insert(PS2_init());
+}
 
 
 int keyboard_insert(struct keyboard *keyboard){

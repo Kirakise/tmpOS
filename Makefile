@@ -1,5 +1,5 @@
 ASM = ./build/kernel.asm.o ./build/idt/idt.asm.o ./build/io/io.asm.o ./build/memory/paging.asm.o
-SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c ./src/fs/file.c ./src/fs/fat/fat16.c ./src/gdt/gdt.c  ./src/print/print.c ./src/task/task.c ./src/task/process.c ./src/isr80h/isr80h.c ./src/isr80h/misc.c ./src/isr80h/io.c ./src/keyboard/keyboard.c
+SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c ./src/fs/file.c ./src/fs/fat/fat16.c ./src/gdt/gdt.c  ./src/print/print.c ./src/task/task.c ./src/task/process.c ./src/isr80h/isr80h.c ./src/isr80h/misc.c ./src/isr80h/io.c ./src/keyboard/keyboard.c ./src/keyboard/PS2.c
 INCS = -I./src
 OBJS = $(SRCS:.c=.o)
 ASMSRCS = ./src/kernel.asm ./src/idt/idt.asm ./src/io/io.asm ./src/memory/paging.asm ./src/gdt/gdt.asm ./src/task/tss.asm ./src/task/task.asm

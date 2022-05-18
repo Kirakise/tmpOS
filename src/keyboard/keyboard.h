@@ -16,3 +16,4 @@ void keyboard_init();
 char keyboard_pop();
 void keyboard_push(char c);
 void keyboard_backspace();
+int keyboard_insert(struct keyboard *keyboard);

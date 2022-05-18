@@ -4,7 +4,8 @@
 
 #define TOTAL_IDESCS 512
 #define MAX_ISR80H_COMMANDS 1024
-
+#define MAX_INTERRUPTS 512
+typedef void (*INTERRUPT_CALLBACK_FUNC)();
 struct idt_desc
 {
         uint16_t offset_1; //0-15
@@ -45,3 +46,4 @@ void idt_init();
 extern void enable_interrupts();
 extern void disable_interrupts();
 void isr80h_register_command(int command_id, ISR80H_COMMAND command);
+int idt_register_interrupt_callback(int interrupt, INTERRUPT_CALLBACK_FUNC interrupt_callback);

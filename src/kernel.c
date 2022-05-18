@@ -13,6 +13,7 @@
 #include "task/process.h"
 #include "print/print.h"
 #include "isr80h/isr80h.h"
+#include "keyboard/keyboard.h"
 
 uint16_t *video_mem = (uint16_t *)(0xB8000);
 uint8_t term_col;
@@ -69,6 +70,10 @@ struct gdt_structured gdt_structured[TOTAL_SEGMENTS] = {
         //{.base = (uintptr_t)&tss_usr, .limit = sizeof(tss_usr), .type = 0xE9} //TSS_USR
 };
 
+void pic_timer_callback(struct interrupt_frame *frame){
+  printk("timer\n");
+}
+
 void kernel_start()
 { 
         //Clear termianl window
@@ -97,6 +102,8 @@ void kernel_start()
         //enable_paging
         enable_paging();
         isr80h_register_commands();
+        keyboard_init();
+        idt_register_interrupt_callback(0x20, pic_timer_callback);
 
 //        hexdump(0x1FFFAF, 100);
 
