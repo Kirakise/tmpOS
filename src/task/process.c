@@ -5,6 +5,8 @@
 #include "../fs/file.h"
 #include "../memory/paging.h"
 #include "../print/print.h"
+#include "../loader/formats/elfloader.h"
+#include "../loader/formats/elf.h"
 struct process *cur_process = 0;
 
 struct process *processes[MAX_PROCESSES];
@@ -48,9 +50,23 @@ static int process_load_binary(const char *filename, struct process *process){
         return 0;
 }
 
+static int process_load_elf(const char *filename, struct process *process){
+  int res = 0;
+  
+  struct elf_file *elf_file = 0;
+  res = elf_load(filename, &elf_file);
+  if (res < 0)
+    return res;
+  process->filetype = PROCESS_FILETYPE_ELF;
+  process->elf_file = elf_file;
+  return res;
+}
+
 static int process_load_data(const char *filename, struct process *process){
         int res = 0;
-        res = process_load_binary(filename, process);
+        res = process_load_elf(filename, process);
+        if (res == -EINFORMAT)
+          res = process_load_binary(filename, process);
         return res;
 }
 
@@ -60,15 +76,80 @@ static uint32_t paging_align_address(uint32_t addr){
         return (addr + PAGING_PAGE_SIZE - (addr % PAGING_PAGE_SIZE));
 }
 
+int process_switch(struct process *process){
+  cur_process = process;
+  return 0;
+}
+
+static int process_find_free_alloc_index(struct process *process){
+  for (int i = 0; i < MAX_PROGRAM_ALLOCATIONS; i++){
+    if (process->allocations[i] == 0)
+      return i;
+  }
+  return -ENOMEM;
+}
+
+void *process_malloc(struct process *process, size_t size){
+  void *ptr = kzalloc(size);
+  if (!ptr)
+    return 0;
+  int index = process_find_free_alloc_index(process);
+  if (index < 0)
+    return 0;
+  process->allocations[index] = ptr;
+  return ptr;
+}
+
+static bool is_process_ptr(struct process *process, void *ptr){
+  for (int i = 0; i < MAX_PROGRAM_ALLOCATIONS; i++)
+    if (process->allocations[i] == ptr)
+      return true;
+  return false;
+}
+
+void process_free(struct process *process, void *ptr){
+  if (!is_process_ptr(process, ptr))
+    return;
+  for (int i = 0; i < MAX_PROGRAM_ALLOCATIONS; i++)
+    if (process->allocations[i] == ptr)
+      process->allocations[i] = 0;
+  kfree(ptr);
+}
+
 int process_map_binary(struct process *process){
         return paging_map_to(process->task->page_dir, (void *)PROGRAM_VIRTUAL_ADDRESS, process->ptr,
                         (void *)paging_align_address(process->ptr + process->size), PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL | PAGING_IS_WRITABLE); 
 }
 
+int process_map_elf(struct process *process){
+  int res = 0;
+  struct elf_file* elf_file = process->elf_file;
+  struct elf_header *header = elf_header(elf_file);
+  struct elf32_phdr *phdrs = elf_pheader(header);
+  for (int i = 0; i < header->e_phnum; i++){
+    struct elf32_phdr *phdr = &phdrs[i];
+    void *phdr_phys_addr = elf_phdr_phys_addr(elf_file, phdr);
+    int flags = PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL;
+    if (phdr->p_flags & PF_W)
+      flags |= PAGING_IS_WRITABLE;
+    res = paging_map_to(process->task->page_dir, paging_align_to_lower_page((void *)phdr->p_vaddr), 
+      paging_align_to_lower_page((void *)phdr_phys_addr), (void *)paging_align_address(phdr_phys_addr + phdr->p_memsz), flags);
+    if (res < 0)
+      break;
+  }
+    return res;
+}
+
 int process_map_memory_process(struct process *process){
         int res = 0;
-        res = process_map_binary(process);
-        if (res < 0)
+
+        if (process->filetype == PROCESS_FILETYPE_BINARY)
+          res = process_map_binary(process);
+        else if (process->filetype == PROCESS_FILETYPE_ELF)
+          res = process_map_elf(process);
+        else
+          panic("process_map_memory: Invalid filetype\n", 1);
+        if (res < 0) 
           return res;
         //map stack
         res = paging_map_to(process->task->page_dir, (void *)PROGRAM_VIRTUAL_STACK_ADDRESS_END, paging_align_address(process->stack),
@@ -90,6 +171,14 @@ int process_load(const char *filename, struct process **process){
                 return -EISTKN;
         res = process_load_for_slot(filename, process, process_slot);
         return res;
+}
+
+int process_load_switch(const char *filename, struct process **process){
+        int res = process_load(filename, process);
+        if (res){
+          return res;
+        }
+        return process_switch(*process);
 }
 
 int process_load_for_slot(const char *filename, struct process **process, int process_slot){

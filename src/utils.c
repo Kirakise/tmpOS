@@ -33,10 +33,28 @@ static void term_new_line()
 }
 
 
+static void term_back_space(){
+        if (term_col == 0){
+          if (term_row == 0)
+            return;
+          term_row--;
+          term_col = VGA_WIDTH - 1;
+        } else
+          term_col--;
+
+        video_mem[term_row * VGA_WIDTH + term_col] = get_char(' ', RED, BLACK);
+}
+
+
 void terminal_writechar(const char c, char fore_color, char back_color)
 {
         if (c == '\n'){
                 term_new_line();
+                return ;
+        }
+
+        if (c == 0x08){
+                term_back_space();
                 return ;
         }
         video_mem[term_row * VGA_WIDTH + term_col++] = get_char(c, fore_color, back_color);
@@ -76,7 +94,7 @@ int memcmp(const void *ptr1, const void *ptr2, uint32_t n){
         for (int i = 0; i < n; i++)
                 if (((char *)ptr1)[i] != ((char *)ptr2)[i])
                         return  ((char *)ptr1)[i] - ((char *)ptr2)[i];
-        return  ((char *)ptr1)[n] - ((char *)ptr2)[n];
+        return 0;
 }
 
 
@@ -155,11 +173,13 @@ char *strdup(const char *s){
 }
 
 char *strncpy(char *dest, const char *src, uint32_t n){
+        int i;
         if (!dest || !src || dest == src)
                 return dest;
-        for (int i = 0; i < n && src[i]; i++){
+        for (i = 0; i < n && src[i]; i++){
                 dest[i] = src[i];
         }
+        dest[i] = 0; 
         return dest;
 }
 

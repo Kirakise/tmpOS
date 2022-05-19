@@ -1,11 +1,10 @@
-#include "print.h"
-#include "../utils.h"
-#include "../memory/kheap.h"
+#include "stdlib.h"
+#include <stdint.h>
+#include <stddef.h>
 #include <stdarg.h>
-#include "../memory/status.h"
-#include "../kernel.h"
-#include "../task/tss.h"
-static char* itoa(int base, int num){
+#include "os.h"
+
+char* itoa(int base, int num){
         int copy = num;
         int size = 0;
         if (base > 32)
@@ -16,7 +15,7 @@ static char* itoa(int base, int num){
                 size++;
                 copy /= base;
         }
-        char *ret = kmalloc(size + 1);
+        char *ret = malloc(size + 1);
         if (!ret)
                 return 0;
         ret[size] = 0;
@@ -33,7 +32,7 @@ static char* itoa(int base, int num){
 }
 
 
-static char* itoau(int base, uint32_t num){
+char* itoau(int base, uint32_t num){
         uint32_t copy = num;
         int size = 0;
         if (base > 32)
@@ -44,7 +43,7 @@ static char* itoau(int base, uint32_t num){
                 size++;
                 copy /= base;
         }
-        char *ret = kmalloc(size + 1);
+        char *ret = malloc(size + 1);
         if (!ret)
                 return 0;
         ret[size] = 0;
@@ -60,9 +59,16 @@ static char* itoau(int base, uint32_t num){
         return ret;
 }
 
+static size_t strlen(const char *s){
+        uint32_t i = 0;
+        while (s[i])
+          i++;
+        return i;
+}
+
 static char *makeaddr(const char *s){
         uint32_t len = strlen(s);
-        char *ret = kmalloc(11);
+        char *ret = malloc(11);
         ret[10] = 0;
         ret[0] = '0';
         ret[1] = 'x';
@@ -93,7 +99,7 @@ static char *getarg(const char *s, va_list *lst){
         else if (s[1] == 'p'){
                 char *tmp = itoau(16, va_arg(*lst, uint32_t));
                 char *tmp2 = makeaddr(tmp);
-                kfree(tmp);
+                free(tmp);
                 return tmp2;
         }
         return 0;
@@ -104,33 +110,28 @@ static int printarg(char *s){
                 return 0;
         int i = 0;
         const char *tmp = s;
-        while (*tmp && ++i)
-                terminal_writechar(*tmp++, RED, BLACK);
-        kfree(s);
+        while (*tmp++)
+          i++;
+        print(s);
+        free(s);
         return i;
 }
 
 int printk(const char *form, ...){
         va_list lst;
         if (!form)
-                return -EINVARG;
+                return -1;
         va_start(lst, form);
         int i = 0;
         while (*form){
-                if (*form != '%')
-                        i += kwrite(1, (char *)form++, 1);
+                if (*form != '%'){
+                        putchar(*form++);
+                        i++;
+                }
                 else{
                         i += printarg(getarg(form, &lst));
                         form += 2;
                 }
         }
         return i;
-}
-
-void print_stack(int max_items){
-        int res = 0;
-        uint32_t arr[max_items];
-        res = walk_stack(arr, max_items);
-        for (int i = 0; i < res; i++)
-                printk("%p\n", arr[i]); 
 }

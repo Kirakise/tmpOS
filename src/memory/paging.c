@@ -50,6 +50,12 @@ uint8_t paging_is_aligned(void *addr){
         return !((uint32_t)addr % PAGING_PAGE_SIZE);
 }
 
+void *paging_align_to_lower_page(void *addr){
+  uint32_t _addr = (uint32_t)addr;
+  _addr -= _addr % PAGING_PAGE_SIZE;
+  return (void *)addr;
+}
+
 uint32_t paging_get_indexes(void *virtual_adress, uint32_t *dir_index_out, uint32_t *table_index){
         if (!paging_is_aligned(virtual_adress))
                 return -EINVARG;

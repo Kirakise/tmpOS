@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stddef.h>
 #include "../io/io.h"
+#include "../idt/idt.h"
+#include "../task/task.h"
 
 int PS2_keyboard_init();
 
@@ -28,6 +30,7 @@ struct keyboard PS2_keyboard = {
 };
 
 int PS2_keyboard_init(){
+  idt_register_interrupt_callback(ISR_KEYBOARD_INTERRUPT, PS2_keyboard_handle_interrupt);
   outb(PS2_PORT_COMMAND, PS2_COMMAND_ENABLE_FIRST_PORT); //enable the first PS2 port
   return 0;
 }
@@ -42,7 +45,19 @@ uint8_t PS2_keyboard_scan_to_char(uint8_t scan){
 }
 
 void PS2_keyboard_handle_interrupt(){
+  kernel_page();
+  uint8_t scan = 0;
+  scan = insb(KEYBOARD_INPUT_PORT);
+  insb(KEYBOARD_INPUT_PORT);
 
+  if (scan & PS2_KEYBOARD_KEY_RELEASED){
+    return ;
+  }
+
+  uint8_t c = keyboard_scan_table[scan];
+  if (c != 0)
+    keyboard_push(c);
+  task_page();
 }
 
 struct keyboard *PS2_init(){

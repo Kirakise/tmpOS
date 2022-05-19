@@ -1,5 +1,5 @@
 ASM = ./build/kernel.asm.o ./build/idt/idt.asm.o ./build/io/io.asm.o ./build/memory/paging.asm.o
-SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c ./src/fs/file.c ./src/fs/fat/fat16.c ./src/gdt/gdt.c  ./src/print/print.c ./src/task/task.c ./src/task/process.c ./src/isr80h/isr80h.c ./src/isr80h/misc.c ./src/isr80h/io.c ./src/keyboard/keyboard.c ./src/keyboard/PS2.c
+SRCS = ./src/kernel.c ./src/utils.c ./src/idt/idt.c ./src/memory/heap.c ./src/memory/kheap.c ./src/memory/paging.c ./src/disk/disk.c ./src/fs/parser.c ./src/disk/streamer.c ./src/fs/file.c ./src/fs/fat/fat16.c ./src/gdt/gdt.c  ./src/print/print.c ./src/task/task.c ./src/task/process.c ./src/isr80h/isr80h.c ./src/isr80h/misc.c ./src/isr80h/io.c ./src/keyboard/keyboard.c ./src/keyboard/PS2.c ./src/loader/formats/elf.c ./src/loader/formats/elfloader.c ./src/isr80h/heap.c
 INCS = -I./src
 OBJS = $(SRCS:.c=.o)
 ASMSRCS = ./src/kernel.asm ./src/idt/idt.asm ./src/io/io.asm ./src/memory/paging.asm ./src/gdt/gdt.asm ./src/task/tss.asm ./src/task/task.asm
@@ -18,7 +18,7 @@ all: ./bin/boot.bin ./bin/kernel.bin user_progs
 	dd if=/dev/zero bs=1048576 count=16 >> ./bin/os.bin
 	sudo mount -t vfat ./bin/os.bin /mnt
 	sudo cp hello.txt /mnt
-	sudo cp ./progs/blank/blank.bin /mnt
+	sudo cp ./progs/blank/blank.elf /mnt
 	sudo umount /mnt
 
 ./bin/kernel.bin: $(ASMOBJS) $(OBJS)
@@ -43,8 +43,10 @@ run:
 
 user_progs:
 	cd ./progs/blank && $(MAKE) all
+	cd ./progs/stdlib && $(MAKE) all
 
 user_progs_clean:
 	cd ./progs/blank && $(MAKE) clean
+	cd ./progs/blank && $(MAKE) clean
 
-re: clean bash
+re: clean user_progs_clean bash

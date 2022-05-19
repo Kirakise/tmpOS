@@ -9,6 +9,7 @@
 #define ERDONLY 6
 #define EUNIMP 7
 #define EISTKN 8
+#define EINFORMAT 9
 
 
 #define PROGRAM_VIRTUAL_ADDRESS 0x400000

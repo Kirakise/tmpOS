@@ -4,6 +4,7 @@
 #include "../kernel.h"
 #include "../print/print.h"
 #include "../idt/idt.h"
+#include "../loader/formats/elfloader.h"
 
 //Running task
 struct task *curr_task = 0;
@@ -91,7 +92,10 @@ int task_init(struct task *task, struct process *process){
         task->page_dir = paging_new_chunk(PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
         if (task->page_dir == 0)
                 return -ENOMEM;
-        task->registers.ip = PROGRAM_VIRTUAL_ADDRESS;
+        if (process->filetype == PROCESS_FILETYPE_ELF)
+          task->registers.ip = elf_header(process->elf_file)->e_entry;
+        else
+          task->registers.ip = PROGRAM_VIRTUAL_ADDRESS;
         task->registers.ss = USER_DATA_SEGMENT;
         task->registers.cs = USER_CODE_SEGMENT;
         task->registers.esp = PROGRAM_VIRTUAL_STACK_ADDRESS_START;

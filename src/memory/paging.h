@@ -31,4 +31,4 @@ uint32_t paging_get(uint32_t *directory, void *virt);
 
 extern void enable_paging();
 extern void paging_load_dir(uint32_t *directory);
-
+void *paging_align_to_lower_page(void *addr);

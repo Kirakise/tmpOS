@@ -38,7 +38,7 @@ void keyboard_backspace(struct process *process){
 
 void keyboard_push(char c){
   struct process *process = task_current()->process;
-  if (!process)
+  if (!process || c == 0)
     return;
   int real_index = keyboard_get_tail_index(process);
   process->keyboard.buffer[real_index] = c;

@@ -11,7 +11,7 @@ static int path_valid(const char *filename){
 }
 
 static int parser_get_drive_by_path(const char **path){
-        if (path_valid(*path))
+        if (!path_valid(*path))
                 return -EBADPATH;
         return **path - 48;
 }

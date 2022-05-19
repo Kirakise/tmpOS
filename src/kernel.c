@@ -70,16 +70,12 @@ struct gdt_structured gdt_structured[TOTAL_SEGMENTS] = {
         //{.base = (uintptr_t)&tss_usr, .limit = sizeof(tss_usr), .type = 0xE9} //TSS_USR
 };
 
-void pic_timer_callback(struct interrupt_frame *frame){
-  printk("timer\n");
-}
-
 void kernel_start()
 { 
         //Clear termianl window
         clear_term();
         //Load GDT
-        memset(gdt_real, 0, sizeof(struct gdt));
+        memset(gdt_real, 0, sizeof(struct gdt) * TOTAL_SEGMENTS);
         gdt_structured_to_gdt(gdt_real, gdt_structured, TOTAL_SEGMENTS);
         gdt_load(gdt_real, sizeof(struct gdt) * TOTAL_SEGMENTS);
         //init kernel heap
@@ -103,7 +99,6 @@ void kernel_start()
         enable_paging();
         isr80h_register_commands();
         keyboard_init();
-        idt_register_interrupt_callback(0x20, pic_timer_callback);
 
 //        hexdump(0x1FFFAF, 100);
 
@@ -111,10 +106,11 @@ void kernel_start()
         struct process *process = 0;
         char tmp[3];
         tmp[2] = 0;
-        int fd = fopen("0:/blank.bin", "r");
+        int fd = fopen("0:/blank.elf", "r");
         fread(tmp, 2, 1, fd);
+        fclose(fd);
         hexdump(tmp, 4);
-        if(process_load("0:/blank.bin", &process))
+        if(process_load_switch("0:/blank.elf", &process))
                 panic("PROBLEM WITH PROCESS\n", 1);
         printk("%i\n", process->task->registers.ss);
         task_run_first_task();
