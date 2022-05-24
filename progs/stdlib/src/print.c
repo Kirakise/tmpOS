@@ -1,8 +1,26 @@
 #include "stdlib.h"
+#include "stdio.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
 #include "os.h"
+
+static uint32_t strlen_3(const char *s){
+  uint32_t i = 0;
+  while (*s++)
+    i++;
+  return i;
+}
+
+static char *strdup_3(const char *str){
+  uint32_t size = strlen_3(str);
+  char *ret = malloc(size);
+  for (int i = 0; i < size; i++){
+    ret[i] = str[i];
+  }
+  ret[size] = 0;
+  return ret;
+}
 
 char* itoa(int base, int num){
         int copy = num;
@@ -10,7 +28,7 @@ char* itoa(int base, int num){
         if (base > 32)
                 return 0;
         if (copy == 0)
-                return strdup("0");
+                return strdup_3("0");
         while (copy){
                 size++;
                 copy /= base;
@@ -38,7 +56,7 @@ char* itoau(int base, uint32_t num){
         if (base > 32)
                 return 0;
         if (copy == 0)
-                return strdup("0");
+                return strdup_3("0");
         while (copy){
                 size++;
                 copy /= base;
@@ -85,16 +103,16 @@ static char *getarg(const char *s, va_list *lst){
         if (s[1] == 'i' || s[1] == 'd')
                 return itoa(10, va_arg(*lst, int));
         else if (s[1] == '%')
-                return strdup("%");
+                return strdup_3("%");
         else if (s[1] == 'X')
                 return itoa(16, va_arg(*lst, int));
         else if (s[1] == 's')
-                return strdup(va_arg(*lst, char *));
+                return strdup_3(va_arg(*lst, char *));
         else if (s[1] == 'c'){
                 char c[2];
                 c[1] = 0;
                 c[0] = (char)va_arg(*lst, uint32_t);
-                return strdup(c);
+                return strdup_3(c);
         }
         else if (s[1] == 'p'){
                 char *tmp = itoau(16, va_arg(*lst, uint32_t));
@@ -117,7 +135,7 @@ static int printarg(char *s){
         return i;
 }
 
-int printk(const char *form, ...){
+int printf(const char *form, ...){
         va_list lst;
         if (!form)
                 return -1;
@@ -125,7 +143,7 @@ int printk(const char *form, ...){
         int i = 0;
         while (*form){
                 if (*form != '%'){
-                        putchar(*form++);
+                        os_putchar(*form++);
                         i++;
                 }
                 else{

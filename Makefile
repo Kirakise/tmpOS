@@ -42,11 +42,11 @@ run:
 
 
 user_progs:
-	cd ./progs/blank && $(MAKE) all
 	cd ./progs/stdlib && $(MAKE) all
+	cd ./progs/blank && $(MAKE) all
 
 user_progs_clean:
 	cd ./progs/blank && $(MAKE) clean
-	cd ./progs/blank && $(MAKE) clean
+	cd ./progs/stdlib && $(MAKE) clean
 
 re: clean user_progs_clean bash

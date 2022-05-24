@@ -3,12 +3,12 @@
 
 int main(int argc, char **argv){
   print("HENLO\n");
-  char *str = malloc(12);
-  free(str);
+  char *str = malloc(1024);
   while(1){
-    if (getkey() != 0){
-      print("key was pressed\n");
-    }
-  };
+    terminal_readline(str, 1024, true);
+    str[3] = '#';
+    print(str);
+  } 
+  free(str);
   return 0;
 }

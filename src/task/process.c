@@ -83,7 +83,7 @@ int process_switch(struct process *process){
 
 static int process_find_free_alloc_index(struct process *process){
   for (int i = 0; i < MAX_PROGRAM_ALLOCATIONS; i++){
-    if (process->allocations[i] == 0)
+    if (process->allocations[i].ptr == 0)
       return i;
   }
   return -ENOMEM;
@@ -94,25 +94,47 @@ void *process_malloc(struct process *process, size_t size){
   if (!ptr)
     return 0;
   int index = process_find_free_alloc_index(process);
-  if (index < 0)
+  if (index < 0){
+    kfree(ptr);
     return 0;
-  process->allocations[index] = ptr;
+  }
+  int res = paging_map_to(process->task->page_dir, ptr, ptr, paging_align_address(ptr + size),
+      PAGING_IS_WRITABLE | PAGING_IS_PRESENT | PAGING_ACESS_FROM_ALL);
+  process->allocations[index].ptr = ptr;
+  process->allocations[index].size = size;
   return ptr;
 }
 
 static bool is_process_ptr(struct process *process, void *ptr){
   for (int i = 0; i < MAX_PROGRAM_ALLOCATIONS; i++)
-    if (process->allocations[i] == ptr)
+    if (process->allocations[i].ptr == ptr)
       return true;
   return false;
 }
 
-void process_free(struct process *process, void *ptr){
-  if (!is_process_ptr(process, ptr))
-    return;
+
+static struct process_allocation *process_get_allocation_by_addr(struct process *process, void *addr){
   for (int i = 0; i < MAX_PROGRAM_ALLOCATIONS; i++)
-    if (process->allocations[i] == ptr)
-      process->allocations[i] = 0;
+    if (process->allocations[i].ptr == addr)
+      return &process->allocations[i];
+  return 0;
+}
+
+void process_free(struct process *process, void *ptr){
+  struct process_allocation *pa = process_get_allocation_by_addr(process, ptr);
+  if (!pa)
+    return ;
+
+  if (paging_map_to(process->task->page_dir, pa->ptr, pa->ptr, paging_align_address(pa->ptr + pa->size),
+        0x0) < 0)
+    return ;
+
+
+  for (int i = 0; i < MAX_PROGRAM_ALLOCATIONS; i++)
+    if (process->allocations[i].ptr == ptr){
+      process->allocations[i].ptr = 0;
+      process->allocations[i].size = 0;
+    }
   kfree(ptr);
 }
 

@@ -1,4 +1,4 @@
-SRCS = ./src/stdlib.c
+SRCS = ./src/stdlib.c ./src/os.c ./src/print.c
 INCS = ./src
 OBJS = $(SRCS:.c=.o)
 ASMSRCS = start.asm ./src/os.asm

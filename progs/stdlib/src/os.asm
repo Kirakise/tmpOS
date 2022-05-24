@@ -1,7 +1,7 @@
 [BITS 32]
 
 global print:function
-global getkey:function
+global os_getkey:function
 global os_malloc:function
 global os_free:function
 global os_putchar:function
@@ -16,7 +16,7 @@ print:
   pop ebp
   ret
 
-getkey:
+os_getkey:
   push ebp
   mov ebp, esp
   mov eax, 2

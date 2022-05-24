@@ -9,6 +9,11 @@
 
 typedef uint8_t PROCESS_FILETYPE;
 
+struct process_allocation{
+  void *ptr;
+  size_t size;
+};
+
 struct process{
         uint16_t id;
 
@@ -16,7 +21,7 @@ struct process{
 
         struct task *task;
         //all allocations made by process
-        void *allocations[MAX_PROGRAM_ALLOCATIONS];
+        struct process_allocation allocations[MAX_PROGRAM_ALLOCATIONS];
 
         PROCESS_FILETYPE filetype;
 
