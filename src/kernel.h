@@ -55,5 +55,6 @@ uint16_t get_char(uint8_t ch, uint8_t fore_color, uint8_t back_color);
 void panic(const char *msg, uint8_t mode);
 void kernel_page();
 void kernel_registers();
+extern struct paging_4gb_chunk *kernel_chunk;
 
 

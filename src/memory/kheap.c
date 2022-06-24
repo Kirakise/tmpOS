@@ -1,6 +1,8 @@
 #include "kheap.h"
 #include "../utils.h"
 #include "heap.h"
+#include "paging.h"
+#include "../kernel.h"
 
 struct heap kernel_heap;
 struct heap_table kernel_heap_table;
@@ -30,4 +32,34 @@ void *kmalloc(uint32_t size){
 
 void kfree(void *ptr) {
         heap_free(ptr, &kernel_heap);
+}
+
+uint32_t ksize(const void *ptr){
+  uint32_t ret = 0;
+  if (!ptr)
+    return 0;
+
+  for (uint32_t i = ((uint32_t)(ptr - kernel_heap.saddr) / BLOCK_SIZE); kernel_heap.table->entries[i] & HEAP_BLOCK_HAS_NEXT; ++i)
+    ret += BLOCK_SIZE;
+  return ret;
+}
+
+void vfree(void *ptr){
+  heap_free(ptr, &kernel_heap);
+}
+
+void *vmalloc(uint32_t size){
+  return heap_malloc(size, &kernel_heap);
+}
+
+uint32_t vsize(const void *ptr){
+  uint32_t ret = 0;
+  if (!ptr)
+    return 0;
+  void *ptr1 = paging_get_physical_address(kernel_chunk->directory_entry, ptr);
+  
+
+  for (uint32_t i = ((uint32_t)(ptr1 - kernel_heap.saddr) / BLOCK_SIZE); kernel_heap.table->entries[i] & HEAP_BLOCK_HAS_NEXT; ++i)
+    ret += BLOCK_SIZE;
+  return ret;
 }

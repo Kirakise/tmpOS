@@ -175,9 +175,9 @@ int fat_16_get_root_directory(struct disk *disk, struct fat_private *private, st
         struct fat_header *header = &private->header.primary_header;
         int root_dir_sector_pos = (header->fat_copies * header->sectors_per_fat) + header->reserved_sectors;
         int root_dir_entries = private->header.primary_header.rood_dir_entries;
-        int root_dir_size = root_dir_entries * sizeof(struct fat_directory_item);
-        int total_sectors = root_dir_size / disk->sector_size;
-        if (root_dir_size % disk->sector_size)
+  int root_dir_size = root_dir_entries * sizeof(struct fat_directory_item);
+  int total_sectors = root_dir_size / disk->sector_size;
+  if (root_dir_size % disk->sector_size)
                 total_sectors += 1;
         int total_items = fat16_get_total_items_for_directory(disk, root_dir_sector_pos);
         struct fat_directory_item *dir_items = kzalloc(root_dir_size);
@@ -192,14 +192,14 @@ int fat_16_get_root_directory(struct disk *disk, struct fat_private *private, st
 
         dir->item = dir_items;
         dir->total = total_items;
-        dir->sector_pos = root_dir_sector_pos;
+  dir->sector_pos = root_dir_sector_pos;
         dir->ending_sector_pos = root_dir_sector_pos + root_dir_size / disk->sector_size;
         return 0;
 }
 
 int fat16_resolve(struct disk *disk){
         int res = 0;
-        struct fat_private *fat_private = kzalloc(sizeof(struct fat_private));
+  struct fat_private *fat_private = kzalloc(sizeof(struct fat_private));
         fat16_init_private(disk, fat_private);
         disk->fs_private = fat_private;
         disk->fs = &fat16_fs;
